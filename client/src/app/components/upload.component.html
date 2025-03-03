@@ -1,0 +1,13 @@
+<form [formGroup]="form">
+    <table>
+        <tr>
+            <td><input type="file" (change)="onFileSelected($event)" accept="image/png"/></td>
+        </tr>
+        <tr>
+            <td><input matInput type="text" size="30" formControlName="comments" placeholder="comments" /></td>
+        </tr>
+        <tr>
+            <td><button mat-raised-button color="primary" (click)="upload()">Upload</button></td>
+        </tr>
+    </table>
+</form>
