@@ -1,8 +1,8 @@
 package csf.day36.repo;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+//import java.sql.Connection;
+//import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -29,16 +29,35 @@ public class FileUploadRepo {
     private static final String SQL_GET_POST_BY_ID = "SELECT post_id, comments, image FROM posts WHERE post_id = ?";    // more optimized than above
 
     public String upload(MultipartFile file, String comments) throws SQLException, IOException {
-        try(Connection con = dataSource.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(INSERT_POST);
-            String postId = UUID.randomUUID().toString().substring(0, 8);
-            ps.setString(1, postId);
-            ps.setString(2, comments);
-            ps.setBytes(3, file.getBytes());
-            ps.executeUpdate();
-
-            return postId;
+		String postId = UUID.randomUUID().toString().substring(0, 8);
+		
+		// NATIVE MTD
+        //try(Connection con = dataSource.getConnection()) {
+        //    PreparedStatement ps = con.prepareStatement(INSERT_POST);
+        //    ps.setString(1, postId);
+        //    ps.setString(2, comments);
+        //    ps.setBytes(3, file.getBytes());
+        //    ps.executeUpdate();
+        //
+        //    return postId;
+        //}
+		
+		try {
+            // Attempt to read the file bytes
+            byte[] fileBytes = file.getBytes();
+    
+            // Use JdbcTemplate to perform the update
+            template.update(INSERT_POST, ps -> {
+                ps.setString(1, postId);
+                ps.setString(2, comments);
+                ps.setBytes(3, fileBytes);
+            });
+        } catch (IOException ex) {
+            // Handle the IOException here (e.g., log it or rethrow a custom exception)
+            throw new RuntimeException("Failed to upload file content", ex);
         }
+		
+		return postId;
     }
 
     public Optional<Post> getPostById(String postId) {
